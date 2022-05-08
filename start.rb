@@ -1,8 +1,15 @@
 require 'net/http'
 require 'nokogiri'
+require 'selenium-webdriver'
 
 url = ARGV[0]
-resp = Net::HTTP.get(URI(url))
+
+# resp = Net::HTTP.get(URI(url))
+# driver = Selenium::WebDriver.for :firefox, options: Selenium::WebDriver::Firefox::Options.new(args: ['--headless'])
+driver = Selenium::WebDriver.for :firefox, capabilities: Selenium::WebDriver::Firefox::Options.new(args: ['--headless'])
+driver.get(url)
+resp = driver.page_source
+
 doc = Nokogiri::HTML.parse(resp)
 problem = doc.xpath("//div[@class='problem-statement']")
 title = problem.xpath("//div[@class='title']").children[0].text
@@ -16,7 +23,7 @@ end
 sampleinput = doc.xpath("//div[@class='input']/pre").children.map {|c| c.text.lstrip}
 sampleoutput = doc.xpath("//div[@class='output']/pre").children.map {|c| c.text.lstrip}
 
-dirname = "#{File.dirname(__FILE__)}/src/#{problemid} #{title}"
+dirname = "#{File.dirname(__FILE__)}/solutions/#{problemid} #{title}"
 Dir.mkdir(dirname) if !Dir.exist?(dirname)
 
 testdirname = "#{dirname}/tests"
